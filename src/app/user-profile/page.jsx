@@ -1,11 +1,30 @@
-import auth from "../../app/middleware";
+// src/app/user-profile/page.jsx
 import { db } from "@/db";
-import { LoginButton } from "./LoginButton";
-import { LogoutButton } from "./LogoutButton";
+import auth from "../../app/middleware";
 
-export default function MyProfilePage({ user, error }) {
-    if (error) {
-        return <div>Error: {error}</div>;
+async function getUserData() {
+    const session = await auth();
+    if (!session || !session.user) {
+        throw new Error("User not authenticated");
+    }
+
+    const userId = session.user.id;
+    const result = await db.query("SELECT * FROM users WHERE id = $1", [userId]);
+
+    const user = result.rows[0];
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    return user;
+}
+
+export default async function MyProfilePage() {
+    let user, error;
+    try {
+        user = await getUserData();
+    } catch (err) {
+        error = err.message;
     }
 
     async function editProfile(formData) {
@@ -20,6 +39,10 @@ export default function MyProfilePage({ user, error }) {
         );
         // revalidatePath("/");
         // redirect("/");
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
     }
 
     return (
@@ -46,30 +69,3 @@ export default function MyProfilePage({ user, error }) {
         </div>
     );
 }
-
-export async function getServerSideProps(context) {
-    try {
-        const session = await auth(context.req, context.res);
-        if (!session || !session.user) {
-            throw new Error("User not authenticated");
-        }
-
-        const userId = session.user.id;
-        const result = await db.query("SELECT * FROM users WHERE id = $1", [userId]);
-
-        const user = result.rows[0];
-        if (!user) {
-            throw new Error("User not found");
-        }
-
-        return {
-            props: { user }, // will be passed to the page component as props
-        };
-    } catch (error) {
-        console.error(error);
-        return {
-            props: { error: error.message },
-        };
-    }
-}
-
