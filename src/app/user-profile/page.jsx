@@ -1,3 +1,4 @@
+"use client"
 import auth from "../../app/middleware";
 import { db } from "@/db";
 // import { LoginButton } from "./LoginButton";
