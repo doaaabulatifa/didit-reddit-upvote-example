@@ -1,7 +1,7 @@
 import auth from "../../app/middleware";
 import { db } from "@/db";
-import { LoginButton } from "./LoginButton";
-import { LogoutButton } from "./LogoutButton";
+// import { LoginButton } from "./LoginButton";
+// import { LogoutButton } from "./LogoutButton";
 
 export default async function myProfile() {
     try {
